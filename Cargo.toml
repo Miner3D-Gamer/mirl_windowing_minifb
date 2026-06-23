@@ -17,7 +17,6 @@ cursor_show_hotspot = []
 mirl_windowing_core = { version = "0.0.0-alpha" }
 mirl_system = { version = "0.0.0-alpha" }
 mirl_buffer = { version = "0.0.0-alpha" }
-mirl_core = { version = "0.0.0-alpha" }
 mirl_extensions = { version = "0.0.0-alpha" }
 mirl_input = { version = "0.0.0-alpha" }
 

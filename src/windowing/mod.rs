@@ -6,7 +6,7 @@ use ::minifb;
 #[cfg(target_os = "windows")]
 use mirl_buffer::Buffer;
 
-use mirl_core::platform::{KeyCode, KeyboardState};
+use mirl_input::keyboard::{KeyCode, KeyboardState};
 // #[cfg(feature = "ico")]
 // use crate::graphics::u32_to_rgba_u8;
 use mirl_extensions::*;
@@ -429,8 +429,9 @@ impl ExtendedWindow for Framework {
     //     std::thread::sleep(Duration::from_millis(time));
     // }
 }
-
-fn get_native_window_handle_from_minifb(
+#[must_use]
+/// Get the handle of the current process from a minifb window
+pub fn get_native_window_handle_from_minifb(
     window: &minifb::Window,
 ) -> raw_window_handle::RawWindowHandle {
     let window_handle = window.get_window_handle();
@@ -548,8 +549,9 @@ impl Control for Framework {
 //         CursorStyle::ResizeAll => minifb::CursorStyle::ResizeAll,
 //     }
 // }
+#[must_use]
 /// Maps mirls `MouseButtons` to `MiniFBs` `MouseButtons`
-const fn map_mouse_button_to_minifb(button: MouseButton) -> Option<minifb::MouseButton> {
+pub const fn map_mouse_button_to_minifb(button: MouseButton) -> Option<minifb::MouseButton> {
     match button {
         MouseButton::Left => Some(minifb::MouseButton::Left),
         MouseButton::Right => Some(minifb::MouseButton::Right),
