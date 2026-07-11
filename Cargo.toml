@@ -10,11 +10,9 @@ authors.workspace = true
 all = []
 _checking = []
 c_compatible = []
-
 cursor_show_hotspot = []
 
 [dependencies]
-
 # MiniFB
 minifb = { "version" = "0.28" }
 mirl_buffer = { version = "0.0.0-alpha" }
@@ -22,7 +20,6 @@ mirl_extensions = { version = "0.0.0-alpha" }
 mirl_input = { version = "0.0.0-alpha" }
 mirl_system = { version = "0.0.0-alpha" }
 mirl_windowing_core = { version = "0.0.0-alpha" }
-
 raw-window-handle = { version = "0.6", default-features = false }
 
 [build-dependencies]
