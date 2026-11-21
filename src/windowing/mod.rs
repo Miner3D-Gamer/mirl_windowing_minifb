@@ -6,7 +6,10 @@ use ::minifb;
 #[cfg(target_os = "windows")]
 use mirl_buffer::Buffer;
 
-use mirl_input::keyboard::{KeyCode, KeyboardState};
+use mirl_input::{
+    keyboard::{KeyCode, KeyboardState},
+    mouse::{ButtonState, MouseState},
+};
 // #[cfg(feature = "ico")]
 // use crate::graphics::u32_to_rgba_u8;
 use mirl_extensions::*;
@@ -29,10 +32,11 @@ pub struct Framework {
     window: ::minifb::Window,
     cursor_subclassed: bool,
     keyboard_state: KeyboardState,
+    mouse_state: MouseState,
 }
 #[must_use]
 /// Convert [`WindowSettings`] to [`WindowOptions`](minifb::WindowOptions)
-pub fn minifb_window_options_from_options(
+pub const fn minifb_window_options_from_options(
     window_options: &WindowSettings,
 ) -> ::minifb::WindowOptions {
     ::minifb::WindowOptions {
@@ -138,7 +142,11 @@ impl NewWindow for Framework {
     /// Settings not accounted for:
     ///
     /// visible
-    fn new(title: &str, settings: WindowSettings) -> Result<Self, WindowError> {
+    fn new<S: IntoPatch<WindowSettings>>(
+        title: &str,
+        settings: S,
+    ) -> Result<Self, WindowError> {
+        let settings = settings.into_value();
         let width = settings.size.0;
         let height = settings.size.1;
         let mut window = match minifb::Window::new(
@@ -165,11 +173,12 @@ impl NewWindow for Framework {
         Ok(Self {
             window,
             cursor_subclassed: false,
-            keyboard_state: KeyboardState::new(),
+            keyboard_state: KeyboardState::default(),
+            mouse_state: MouseState::default(),
         })
     }
 }
-impl Window for Framework {
+impl WindowingVisualUpdate for Framework {
     #[inline]
     fn update_raw(
         &mut self,
@@ -183,14 +192,15 @@ impl Window for Framework {
             Err(e) => Err(minifb_error_to_error(&e)),
         }
     }
-
+}
+impl Window for Framework {
+    #[inline]
+    fn set_title(&mut self, title: &str) {
+        self.window.set_title(title);
+    }
     #[inline]
     fn is_open(&self) -> bool {
         self.window.is_open()
-    }
-
-    fn close_and_clean_up(&mut self) {
-        //TODO: ADD DESTROYER
     }
 }
 
@@ -204,17 +214,14 @@ impl MouseInput for Framework {
         value.try_tuple_into()
     }
     #[inline]
-    fn is_mouse_down(&self, button: MouseButton) -> bool {
-        if let Some(key) = map_mouse_button_to_minifb(button) {
-            return self.window.get_mouse_down(key);
-        }
-        false
+    fn get_mouse_button(&self, button: MouseButton) -> Option<ButtonState> {
+        Some(self.mouse_state.get_mouse_button(button))
     }
 }
 impl KeyboardInput for Framework {
     #[inline]
-    fn is_key_down(&self, key: KeyCode) -> bool {
-        self.window.is_key_down(map_keycode_to_minifb(key))
+    fn get_key(&self, key: KeyCode) -> ButtonState {
+        self.keyboard_state.get_key(key)
     }
 }
 
@@ -275,11 +282,11 @@ impl ExtendedMouseInput for Framework {
     }
 }
 
-impl ExtendedKeyboardInput for Framework {
-    fn get_all_keys_down(&self) -> Vec<KeyCode> {
-        self.keyboard_state.get_all_pressed_keys()
-    }
-}
+// impl ExtendedKeyboardInput for Framework {
+//     fn get_all_keys_down(&self) -> Vec<KeyCode> {
+//         self.keyboard_state.get_all_pressed_keys()
+//     }
+// }
 
 impl ManageCursorStyle<mirl_system::cursors::NativeCursor> for Framework {
     fn load_custom_default_cursors(
@@ -419,16 +426,7 @@ impl GetWindowHandle for Framework {
         get_native_window_handle_from_minifb(&self.window)
     }
 }
-impl ExtendedWindow for Framework {
-    #[inline]
-    fn set_title(&mut self, title: &str) {
-        self.window.set_title(title);
-    }
-    // #[inline]
-    // fn wait(&self, time: u64) {
-    //     std::thread::sleep(Duration::from_millis(time));
-    // }
-}
+
 #[must_use]
 /// Get the handle of the current process from a minifb window
 pub fn get_native_window_handle_from_minifb(
@@ -549,6 +547,8 @@ impl Control for Framework {
 //         CursorStyle::ResizeAll => minifb::CursorStyle::ResizeAll,
 //     }
 // }
+
+// TODO: Implement this conversion in
 #[must_use]
 /// Maps mirls `MouseButtons` to `MiniFBs` `MouseButtons`
 pub const fn map_mouse_button_to_minifb(button: MouseButton) -> Option<minifb::MouseButton> {
@@ -560,7 +560,8 @@ pub const fn map_mouse_button_to_minifb(button: MouseButton) -> Option<minifb::M
         | MouseButton::Extra2
         | MouseButton::Extra3
         | MouseButton::Extra4
-        | MouseButton::Unsupported => None,
+        | MouseButton::Extra5
+        | MouseButton::Extra6 => None,
     }
 }
 /// Maps mirls `KeyCodes` to `MiniFBs` Keycodes

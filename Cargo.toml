@@ -2,9 +2,11 @@
 name = "mirl_windowing_minifb"
 version = "0.0.0-alpha"
 edition = "2024"
-repository.workspace = true
+repository = "https://github.com/Miner3D-Gamer/mirl_windowing_minifb"
 license.workspace = true
 authors.workspace = true
+rust-version.workspace = true
+maintenance.workspace = true
 
 [features]
 all = [
@@ -41,7 +43,7 @@ mirl_windowing_core = { version = "0.0.0-alpha" }
 raw-window-handle = { version = "0.6", default-features = false }
 
 [build-dependencies]
-mirl_build_tools = { workspace = true }
+mirl_build_tools = { version = "0.0.0-alpha" }
 
 [lints]
 workspace = true
